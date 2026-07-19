@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PEP 1 · CPT y Prueba de Razonabilidad",
+  title: "Mesa de estudio CPT · PEP 1",
   description:
-    "Entrenamiento interactivo para Capital Propio Tributario y Prueba de Razonabilidad.",
+    "Material interactivo para estudiar Capital Propio Tributario y Prueba de Razonabilidad.",
 };
 
 type RootLayoutProps = Readonly<{

@@ -6,30 +6,42 @@ import Home from "@/app/page";
 describe("Home", () => {
   afterEach(cleanup);
 
+  it("keeps the sidebar restore control inside the sticky header", async () => {
+    const user = userEvent.setup();
+
+    render(<Home />);
+    await user.click(screen.getByRole("button", { name: "Ocultar navegación" }));
+
+    const restoreButton = screen.getByRole("button", { name: "Mostrar navegación" });
+    expect(restoreButton.closest("header")).not.toBeNull();
+  });
+
   it.each([
-    ["Radar", "Tu mapa de aprendizaje"],
-    ["Conceptos", "Despegue conceptual"],
-    ["Algoritmo", "Depura paso a paso"],
-    ["Laboratorio", "Practica con casos auditables"],
-    ["Examen", "Tu kit de emergencia"],
+    ["Radar", "Del balance a una cuadratura que puedas explicar"],
+    ["Conceptos", "Construye criterio antes de mover cifras"],
+    ["Algoritmo", "Depura en un orden que puedas auditar"],
+    ["Laboratorio", "Trabaja casos que dejan rastro"],
+    ["Examen", "Resuelve un caso completo antes de mirar las respuestas"],
   ])("shows %s after selecting it from the bottom navigation", async (label, title) => {
     const user = userEvent.setup();
 
     render(<Home />);
 
-    await user.click(screen.getByRole("button", { name: label }));
+    const stageButtons = screen.getAllByRole("button", { name: label });
+    await user.click(stageButtons[0]);
 
     expect(
       await screen.findByRole("heading", { name: title }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: label })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
+    expect(
+      screen
+        .getAllByRole("button", { name: label })
+        .some((button) => button.getAttribute("aria-current") === "page"),
+    ).toBe(true);
     expect(
       screen.getAllByRole("button").filter(
         (button) => button.getAttribute("aria-current") === "page",
       ),
-    ).toHaveLength(1);
+    ).toHaveLength(2);
   });
 });

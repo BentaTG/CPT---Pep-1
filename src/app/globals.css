@@ -12,8 +12,9 @@
   --color-warning-text: #946200;
   --color-danger-bg: #F7ECEC;
   --color-danger-text: #8A3D3D;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+  --font-sans: "Aptos", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Aptos Display", "Segoe UI Variable Display", "Segoe UI", sans-serif;
+  --font-mono: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
 }
 
 :root {
@@ -44,6 +45,32 @@ h1,
 h2,
 h3 {
   letter-spacing: -0.02em;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.study-progress {
+  appearance: none;
+  border: 0;
+  background: rgba(23, 50, 77, 0.1);
+}
+
+.study-progress::-webkit-progress-bar {
+  border-radius: 999px;
+  background: rgba(23, 50, 77, 0.1);
+}
+
+.study-progress::-webkit-progress-value {
+  border-radius: 999px;
+  background: var(--color-success-text);
+}
+
+.study-progress::-moz-progress-bar {
+  border-radius: 999px;
+  background: var(--color-success-text);
 }
 
 @media (prefers-reduced-transparency: reduce) {
