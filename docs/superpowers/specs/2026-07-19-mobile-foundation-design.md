@@ -128,7 +128,7 @@ No habrá persistencia, rutas independientes ni almacenamiento local en esta ent
 
 1. El proyecto inicia con App Router, TypeScript estricto y Tailwind CSS estable actual.
 2. Las dependencias obligatorias quedan declaradas e instaladas.
-3. Los diez tokens editoriales tienen exactamente los valores definidos por `AGENTS.md`.
+3. Los once tokens editoriales tienen exactamente los valores definidos por `AGENTS.md`.
 4. `MobileShell` reproduce la composición mobile-first exigida.
 5. La barra contiene Radar, Conceptos, Algoritmo, Laboratorio y Examen.
 6. Cada destino ofrece una zona táctil mínima de 44 px.
