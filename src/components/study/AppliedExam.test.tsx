@@ -1,11 +1,38 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import { AppliedExam } from "@/components/study/AppliedExam";
 import { PRACTICE_EXAM } from "@/data/study";
+import { STUDY_STORAGE_KEYS } from "@/lib/usePersistentState";
 
 describe("AppliedExam", () => {
   afterEach(cleanup);
+
+  it("restores an in-progress attempt after remounting", async () => {
+    const user = userEvent.setup();
+    render(<AppliedExam />);
+
+    await user.click(screen.getByRole("button", { name: "Comenzar prueba" }));
+    await user.type(
+      screen.getByRole("textbox", { name: "CPT final por método del activo" }),
+      "445000000",
+    );
+    await waitFor(() =>
+      expect(window.localStorage.getItem(STUDY_STORAGE_KEYS.exam)).toContain(
+        '"cpt-method":"445000000"',
+      ),
+    );
+
+    cleanup();
+    render(<AppliedExam />);
+
+    expect(
+      await screen.findByRole("textbox", {
+        name: "CPT final por método del activo",
+      }),
+    ).toHaveValue("445000000");
+    expect(screen.getByText("Prueba en curso")).toBeInTheDocument();
+  });
 
   it("keeps solutions hidden until the student submits the attempt", async () => {
     const user = userEvent.setup();

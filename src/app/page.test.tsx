@@ -1,7 +1,8 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import Home from "@/app/page";
+import { STUDY_STORAGE_KEYS } from "@/lib/usePersistentState";
 
 describe("Home", () => {
   afterEach(cleanup);
@@ -14,6 +15,27 @@ describe("Home", () => {
 
     const restoreButton = screen.getByRole("button", { name: "Mostrar navegación" });
     expect(restoreButton.closest("header")).not.toBeNull();
+  });
+
+  it("restores the current stage after the page is mounted again", async () => {
+    const user = userEvent.setup();
+    render(<Home />);
+
+    await user.click(screen.getAllByRole("button", { name: "Conceptos" })[0]);
+    await waitFor(() =>
+      expect(window.localStorage.getItem(STUDY_STORAGE_KEYS.navigation)).toContain(
+        '"activeStage":"conceptos"',
+      ),
+    );
+
+    cleanup();
+    render(<Home />);
+
+    expect(
+      await screen.findByRole("heading", {
+        name: "Construye criterio antes de mover cifras",
+      }),
+    ).toBeInTheDocument();
   });
 
   it.each([

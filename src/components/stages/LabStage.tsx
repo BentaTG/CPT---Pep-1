@@ -3,18 +3,45 @@
 import clsx from "clsx";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { CheckCircle2, FlaskConical, Scale, Target } from "lucide-react";
-import { useState } from "react";
 import { GUIDED_CASES, type GuidedCase } from "@/data/study";
 import { formatClp } from "@/lib/format";
+import {
+  isRecord,
+  STUDY_STORAGE_KEYS,
+  usePersistentState,
+} from "@/lib/usePersistentState";
 import { CalculationTable } from "@/components/study/CalculationTable";
 import { Callout } from "@/components/ui/Callout";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 
 type Worksheet = "method" | "reasonability";
+type LaboratoryProgress = Readonly<{
+  selectedCaseId: GuidedCase["id"];
+  worksheet: Worksheet;
+}>;
+
+const guidedCaseIds = new Set(GUIDED_CASES.map(({ id }) => id));
+const initialLaboratoryProgress: LaboratoryProgress = {
+  selectedCaseId: "case-1",
+  worksheet: "method",
+};
+
+function isLaboratoryProgress(value: unknown): value is LaboratoryProgress {
+  return (
+    isRecord(value) &&
+    typeof value.selectedCaseId === "string" &&
+    guidedCaseIds.has(value.selectedCaseId as GuidedCase["id"]) &&
+    (value.worksheet === "method" || value.worksheet === "reasonability")
+  );
+}
 
 export function LabStage() {
-  const [selectedCaseId, setSelectedCaseId] = useState<GuidedCase["id"]>("case-1");
-  const [worksheet, setWorksheet] = useState<Worksheet>("method");
+  const [laboratoryProgress, setLaboratoryProgress] = usePersistentState(
+    STUDY_STORAGE_KEYS.laboratory,
+    initialLaboratoryProgress,
+    isLaboratoryProgress,
+  );
+  const { selectedCaseId, worksheet } = laboratoryProgress;
   const reduceMotion = useReducedMotion();
   const selectedCase = GUIDED_CASES.find(({ id }) => id === selectedCaseId) ?? GUIDED_CASES[0];
 
@@ -33,8 +60,10 @@ export function LabStage() {
             type="button"
             aria-pressed={selectedCaseId === studyCase.id}
             onClick={() => {
-              setSelectedCaseId(studyCase.id);
-              setWorksheet("method");
+              setLaboratoryProgress({
+                selectedCaseId: studyCase.id,
+                worksheet: "method",
+              });
             }}
             className={clsx(
               "min-h-12 rounded-xl px-2 py-2 text-xs font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-petroleum sm:text-sm",
@@ -92,7 +121,12 @@ export function LabStage() {
                 <button
                   type="button"
                   aria-pressed={worksheet === "method"}
-                  onClick={() => setWorksheet("method")}
+                  onClick={() =>
+                    setLaboratoryProgress((current) => ({
+                      ...current,
+                      worksheet: "method",
+                    }))
+                  }
                   className={clsx(
                     "min-h-11 rounded-lg px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-petroleum",
                     worksheet === "method" ? "bg-blue-gray text-navy-primary" : "text-graphite/55",
@@ -103,7 +137,12 @@ export function LabStage() {
                 <button
                   type="button"
                   aria-pressed={worksheet === "reasonability"}
-                  onClick={() => setWorksheet("reasonability")}
+                  onClick={() =>
+                    setLaboratoryProgress((current) => ({
+                      ...current,
+                      worksheet: "reasonability",
+                    }))
+                  }
                   className={clsx(
                     "min-h-11 rounded-lg px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-petroleum",
                     worksheet === "reasonability" ? "bg-blue-gray text-navy-primary" : "text-graphite/55",

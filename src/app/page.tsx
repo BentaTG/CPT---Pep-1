@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { BookOpenText, FileCheck2, PanelLeftOpen } from "lucide-react";
-import { useState } from "react";
+import { useMemo } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { StudyNav } from "@/components/layout/StudyNav";
 import { AlgorithmStage } from "@/components/stages/AlgorithmStage";
@@ -10,7 +10,38 @@ import { ConceptsStage } from "@/components/stages/ConceptsStage";
 import { ExamStage } from "@/components/stages/ExamStage";
 import { LabStage } from "@/components/stages/LabStage";
 import { RadarStage } from "@/components/stages/RadarStage";
-import { getStage, type StageId } from "@/data/navigation";
+import { getStage, STAGE_NAV_ITEMS, type StageId } from "@/data/navigation";
+import {
+  isRecord,
+  STUDY_STORAGE_KEYS,
+  usePersistentState,
+} from "@/lib/usePersistentState";
+
+type NavigationProgress = Readonly<{
+  activeStage: StageId;
+  sidebarCollapsed: boolean;
+  visitedStages: readonly StageId[];
+}>;
+
+const stageIds = new Set<StageId>(STAGE_NAV_ITEMS.map(({ id }) => id));
+const initialNavigationProgress: NavigationProgress = {
+  activeStage: "radar",
+  sidebarCollapsed: false,
+  visitedStages: ["radar"],
+};
+
+function isNavigationProgress(value: unknown): value is NavigationProgress {
+  return (
+    isRecord(value) &&
+    typeof value.sidebarCollapsed === "boolean" &&
+    typeof value.activeStage === "string" &&
+    stageIds.has(value.activeStage as StageId) &&
+    Array.isArray(value.visitedStages) &&
+    value.visitedStages.every(
+      (stageId) => typeof stageId === "string" && stageIds.has(stageId as StageId),
+    )
+  );
+}
 
 function StageContent({
   activeStage,
@@ -36,17 +67,27 @@ function StageContent({
 }
 
 export default function Home() {
-  const [activeStage, setActiveStage] = useState<StageId>("radar");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [visitedStages, setVisitedStages] = useState<ReadonlySet<StageId>>(
-    () => new Set<StageId>(["radar"]),
+  const [navigationProgress, setNavigationProgress] = usePersistentState(
+    STUDY_STORAGE_KEYS.navigation,
+    initialNavigationProgress,
+    isNavigationProgress,
+  );
+  const { activeStage, sidebarCollapsed } = navigationProgress;
+  const visitedStages = useMemo(
+    () => new Set(navigationProgress.visitedStages),
+    [navigationProgress.visitedStages],
   );
   const reduceMotion = useReducedMotion();
   const stage = getStage(activeStage);
 
   function navigate(stageId: StageId) {
-    setActiveStage(stageId);
-    setVisitedStages((current) => new Set([...current, stageId]));
+    setNavigationProgress((current) => ({
+      ...current,
+      activeStage: stageId,
+      visitedStages: current.visitedStages.includes(stageId)
+        ? current.visitedStages
+        : [...current.visitedStages, stageId],
+    }));
   }
 
   return (
@@ -58,7 +99,12 @@ export default function Home() {
           visitedStages={visitedStages}
           sidebarCollapsed={sidebarCollapsed}
           onStageChange={navigate}
-          onSidebarToggle={() => setSidebarCollapsed((current) => !current)}
+          onSidebarToggle={() =>
+            setNavigationProgress((current) => ({
+              ...current,
+              sidebarCollapsed: !current.sidebarCollapsed,
+            }))
+          }
         />
       }
     >
@@ -68,7 +114,12 @@ export default function Home() {
             <button
               type="button"
               aria-label="Mostrar navegación"
-              onClick={() => setSidebarCollapsed(false)}
+              onClick={() =>
+                setNavigationProgress((current) => ({
+                  ...current,
+                  sidebarCollapsed: false,
+                }))
+              }
               className="hidden h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-navy-primary px-3 text-white shadow-sm transition-colors hover:bg-petroleum focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-petroleum focus-visible:ring-offset-2 md:flex"
             >
               <PanelLeftOpen aria-hidden="true" size={20} />

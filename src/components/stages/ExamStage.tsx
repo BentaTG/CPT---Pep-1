@@ -1,24 +1,45 @@
 "use client";
 
 import { Check, RotateCcw, TimerReset } from "lucide-react";
-import { useState } from "react";
+import { useMemo } from "react";
 import { AppliedExam } from "@/components/study/AppliedExam";
 import { FINAL_CHECKLIST, FORMULAS, THEORY_QUESTIONS } from "@/data/study";
 import { FormulaCard } from "@/components/ui/FormulaCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { StudyDisclosure } from "@/components/ui/StudyDisclosure";
+import {
+  STUDY_STORAGE_KEYS,
+  usePersistentState,
+} from "@/lib/usePersistentState";
+
+function isChecklistProgress(value: unknown): value is readonly number[] {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (index) =>
+        Number.isInteger(index) && index >= 0 && index < FINAL_CHECKLIST.length,
+    )
+  );
+}
 
 export function ExamStage() {
-  const [checkedItems, setCheckedItems] = useState<ReadonlySet<number>>(new Set());
+  const [checkedItemIndexes, setCheckedItemIndexes] = usePersistentState<readonly number[]>(
+    STUDY_STORAGE_KEYS.checklist,
+    [],
+    isChecklistProgress,
+  );
+  const checkedItems = useMemo(
+    () => new Set(checkedItemIndexes),
+    [checkedItemIndexes],
+  );
   const progress = Math.round((checkedItems.size / FINAL_CHECKLIST.length) * 100);
 
   function toggleItem(index: number) {
-    setCheckedItems((current) => {
-      const next = new Set(current);
-      if (next.has(index)) next.delete(index);
-      else next.add(index);
-      return next;
-    });
+    setCheckedItemIndexes((current) =>
+      current.includes(index)
+        ? current.filter((currentIndex) => currentIndex !== index)
+        : [...current, index],
+    );
   }
 
   return (
@@ -71,7 +92,7 @@ export function ExamStage() {
                   <span className="font-mono text-sm font-bold text-petroleum">{checkedItems.size}/{FINAL_CHECKLIST.length} · {progress}%</span>
                   <button
                     type="button"
-                    onClick={() => setCheckedItems(new Set())}
+                    onClick={() => setCheckedItemIndexes([])}
                     className="flex min-h-11 items-center gap-2 rounded-xl border border-navy-primary/15 bg-white px-3 text-xs font-bold text-navy-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-petroleum"
                   >
                     <RotateCcw aria-hidden="true" size={15} /> Reiniciar

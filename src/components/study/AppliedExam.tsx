@@ -11,12 +11,59 @@ import {
   Send,
   XCircle,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { PRACTICE_EXAM } from "@/data/study";
 import { formatClp } from "@/lib/format";
+import {
+  isRecord,
+  STUDY_STORAGE_KEYS,
+  usePersistentState,
+} from "@/lib/usePersistentState";
 
 type TheoryAnswers = Readonly<Record<string, "true" | "false" | undefined>>;
 type NumericAnswers = Readonly<Record<string, string>>;
+type ExamProgress = Readonly<{
+  started: boolean;
+  submitted: boolean;
+  remaining: number;
+  theoryAnswers: TheoryAnswers;
+  numericAnswers: NumericAnswers;
+}>;
+
+const INITIAL_EXAM_SECONDS = PRACTICE_EXAM.durationMinutes * 60;
+const initialExamProgress: ExamProgress = {
+  started: false,
+  submitted: false,
+  remaining: INITIAL_EXAM_SECONDS,
+  theoryAnswers: {},
+  numericAnswers: {},
+};
+
+function isTheoryAnswers(value: unknown): value is TheoryAnswers {
+  return (
+    isRecord(value) &&
+    Object.values(value).every(
+      (answer) => answer === "true" || answer === "false" || answer === undefined,
+    )
+  );
+}
+
+function isNumericAnswers(value: unknown): value is NumericAnswers {
+  return isRecord(value) && Object.values(value).every((answer) => typeof answer === "string");
+}
+
+function isExamProgress(value: unknown): value is ExamProgress {
+  return (
+    isRecord(value) &&
+    typeof value.started === "boolean" &&
+    typeof value.submitted === "boolean" &&
+    Number.isInteger(value.remaining) &&
+    Number(value.remaining) >= 0 &&
+    Number(value.remaining) <= INITIAL_EXAM_SECONDS &&
+    isTheoryAnswers(value.theoryAnswers) &&
+    isNumericAnswers(value.numericAnswers)
+  );
+}
 
 function parseClpInput(value: string): number {
   const digits = value.replace(/[^\d-]/g, "");
@@ -30,28 +77,26 @@ function formatRemaining(seconds: number): string {
 }
 
 export function AppliedExam() {
-  const initialSeconds = PRACTICE_EXAM.durationMinutes * 60;
-  const [started, setStarted] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [remaining, setRemaining] = useState(initialSeconds);
-  const [theoryAnswers, setTheoryAnswers] = useState<TheoryAnswers>({});
-  const [numericAnswers, setNumericAnswers] = useState<NumericAnswers>({});
+  const [examProgress, setExamProgress] = usePersistentState(
+    STUDY_STORAGE_KEYS.exam,
+    initialExamProgress,
+    isExamProgress,
+  );
+  const { started, submitted, remaining, theoryAnswers, numericAnswers } = examProgress;
 
   useEffect(() => {
     if (!started || submitted || remaining === 0) return;
 
     const timer = window.setInterval(() => {
-      if (remaining <= 1) {
-        setRemaining(0);
-        setSubmitted(true);
-        return;
-      }
-
-      setRemaining(remaining - 1);
+      setExamProgress((current) =>
+        current.remaining <= 1
+          ? { ...current, remaining: 0, submitted: true }
+          : { ...current, remaining: current.remaining - 1 },
+      );
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [remaining, started, submitted]);
+  }, [remaining, setExamProgress, started, submitted]);
 
   const score = useMemo(() => {
     const theoryScore = PRACTICE_EXAM.theoryItems.reduce(
@@ -72,11 +117,7 @@ export function AppliedExam() {
   }, [numericAnswers, theoryAnswers]);
 
   function resetExam() {
-    setStarted(false);
-    setSubmitted(false);
-    setRemaining(initialSeconds);
-    setTheoryAnswers({});
-    setNumericAnswers({});
+    setExamProgress(initialExamProgress);
   }
 
   return (
@@ -111,7 +152,9 @@ export function AppliedExam() {
           {!started ? (
             <button
               type="button"
-              onClick={() => setStarted(true)}
+              onClick={() =>
+                setExamProgress((current) => ({ ...current, started: true }))
+              }
               className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-bold text-navy-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-gray"
             >
               <AlarmClock aria-hidden="true" size={17} /> Comenzar prueba
@@ -167,7 +210,7 @@ export function AppliedExam() {
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          setSubmitted(true);
+          setExamProgress((current) => ({ ...current, submitted: true }));
         }}
         className="space-y-9 px-5 py-7 sm:px-7 lg:px-8"
       >
@@ -242,7 +285,15 @@ export function AppliedExam() {
                             name={item.id}
                             value={answer}
                             checked={theoryAnswers[item.id] === answer}
-                            onChange={() => setTheoryAnswers((current) => ({ ...current, [item.id]: answer }))}
+                            onChange={() =>
+                              setExamProgress((current) => ({
+                                ...current,
+                                theoryAnswers: {
+                                  ...current.theoryAnswers,
+                                  [item.id]: answer,
+                                },
+                              }))
+                            }
                             className="accent-petroleum"
                           />
                           {answer === "true" ? "Verdadero" : "Falso"}
@@ -287,7 +338,16 @@ export function AppliedExam() {
                       type="text"
                       inputMode="numeric"
                       value={answer}
-                      onChange={(event) => setNumericAnswers((current) => ({ ...current, [item.id]: event.target.value }))}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        setExamProgress((current) => ({
+                          ...current,
+                          numericAnswers: {
+                            ...current.numericAnswers,
+                            [item.id]: value,
+                          },
+                        }));
+                      }}
                       aria-label={item.label}
                       placeholder="0"
                       className="min-h-12 w-full rounded-xl border border-navy-primary/15 bg-white pl-7 pr-3 font-mono text-sm font-bold text-navy-primary outline-none focus:border-petroleum focus:ring-2 focus:ring-petroleum/15"
