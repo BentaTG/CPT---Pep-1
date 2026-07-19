@@ -40,7 +40,7 @@ export function BottomNav({ activeStage, onStageChange }: BottomNavProps) {
                 "relative isolate flex min-h-14 min-w-0 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[0.625rem] font-semibold leading-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-petroleum focus-visible:ring-offset-2",
                 isActive
                   ? "text-navy-primary"
-                  : "text-graphite/65 hover:text-petroleum",
+                  : "text-graphite/75 hover:text-petroleum",
               )}
             >
               {isActive ? (

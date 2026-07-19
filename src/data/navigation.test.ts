@@ -34,6 +34,7 @@ describe("navigation data", () => {
   });
 
   it("freezes the stage map, every definition, and derived navigation items", () => {
+    expect(Object.isFrozen(STAGE_IDS)).toBe(true);
     expect(Object.isFrozen(STAGES)).toBe(true);
     expect(Object.values(STAGES).every(Object.isFrozen)).toBe(true);
     expect(Object.isFrozen(STAGE_NAV_ITEMS)).toBe(true);

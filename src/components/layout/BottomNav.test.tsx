@@ -21,6 +21,14 @@ describe("BottomNav", () => {
     ).not.toHaveAttribute("aria-current");
   });
 
+  it("uses the accessible inactive-label contrast token", () => {
+    render(<BottomNav activeStage="radar" onStageChange={vi.fn()} />);
+
+    expect(screen.getByRole("button", { name: "Conceptos" })).toHaveClass(
+      "text-graphite/75",
+    );
+  });
+
   it("emits the selected stage and keeps every target at least 44px high", async () => {
     const user = userEvent.setup();
     const onStageChange = vi.fn();

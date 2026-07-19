@@ -7,13 +7,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-export const STAGE_IDS = [
+export const STAGE_IDS = Object.freeze([
   "radar",
   "conceptos",
   "algoritmo",
   "laboratorio",
   "examen",
-] as const;
+] as const);
 
 export type StageId = (typeof STAGE_IDS)[number];
 
