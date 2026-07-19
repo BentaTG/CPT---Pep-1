@@ -26,8 +26,8 @@ export type StageDefinition = Readonly<{
   icon: LucideIcon;
 }>;
 
-export const STAGES = {
-  radar: {
+export const STAGES = Object.freeze({
+  radar: Object.freeze({
     id: "radar",
     label: "Radar",
     eyebrow: "Etapa 1 de 5",
@@ -35,8 +35,8 @@ export const STAGES = {
     description:
       "Ubica tus fortalezas y define la ruta de estudio para CPT y Prueba de Razonabilidad.",
     icon: Compass,
-  },
-  conceptos: {
+  }),
+  conceptos: Object.freeze({
     id: "conceptos",
     label: "Conceptos",
     eyebrow: "Etapa 2 de 5",
@@ -44,8 +44,8 @@ export const STAGES = {
     description:
       "Distingue patrimonio financiero, CPT y los conceptos que no debes confundir.",
     icon: Layers,
-  },
-  algoritmo: {
+  }),
+  algoritmo: Object.freeze({
     id: "algoritmo",
     label: "Algoritmo",
     eyebrow: "Etapa 3 de 5",
@@ -53,8 +53,8 @@ export const STAGES = {
     description:
       "Recorre el método del activo y del pasivo con una secuencia clara y verificable.",
     icon: GitMerge,
-  },
-  laboratorio: {
+  }),
+  laboratorio: Object.freeze({
     id: "laboratorio",
     label: "Laboratorio",
     eyebrow: "Etapa 4 de 5",
@@ -62,8 +62,8 @@ export const STAGES = {
     description:
       "Trabaja los casos y aprende a diagnosticar descuadres sin perder el hilo del cálculo.",
     icon: Calculator,
-  },
-  examen: {
+  }),
+  examen: Object.freeze({
     id: "examen",
     label: "Examen",
     eyebrow: "Etapa 5 de 5",
@@ -71,10 +71,12 @@ export const STAGES = {
     description:
       "Repasa fórmulas, checklists y la ruta táctica de resolución en diez minutos.",
     icon: Timer,
-  },
-} satisfies Record<StageId, StageDefinition>;
+  }),
+}) satisfies Record<StageId, StageDefinition>;
 
-export const STAGE_NAV_ITEMS = STAGE_IDS.map((stageId) => STAGES[stageId]);
+export const STAGE_NAV_ITEMS = Object.freeze(
+  STAGE_IDS.map((stageId) => STAGES[stageId]),
+);
 
 export function getStage(stageId: StageId): StageDefinition {
   return STAGES[stageId];

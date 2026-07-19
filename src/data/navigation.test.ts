@@ -3,6 +3,7 @@ import {
   getStage,
   STAGE_IDS,
   STAGE_NAV_ITEMS,
+  STAGES,
 } from "@/data/navigation";
 
 describe("navigation data", () => {
@@ -30,5 +31,11 @@ describe("navigation data", () => {
       eyebrow: "Etapa 4 de 5",
       title: "Practica con casos auditables",
     });
+  });
+
+  it("freezes the stage map, every definition, and derived navigation items", () => {
+    expect(Object.isFrozen(STAGES)).toBe(true);
+    expect(Object.values(STAGES).every(Object.isFrozen)).toBe(true);
+    expect(Object.isFrozen(STAGE_NAV_ITEMS)).toBe(true);
   });
 });
