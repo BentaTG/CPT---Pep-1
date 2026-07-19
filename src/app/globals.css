@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy-primary: #17324D;
+  --color-petroleum: #1C5D6B;
+  --color-graphite: #2D3740;
+  --color-blue-gray: #EAF1F4;
+  --color-light-gray: #F3F5F6;
+  --color-success-bg: #EAF4EF;
+  --color-success-text: #2F6B55;
+  --color-warning-bg: #FFF5DD;
+  --color-warning-text: #946200;
+  --color-danger-bg: #F7ECEC;
+  --color-danger-text: #8A3D3D;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+:root {
+  color: var(--color-graphite);
+  background: var(--color-blue-gray);
+  font-family: var(--font-sans);
+  font-optical-sizing: auto;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-width: 320px;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  background: var(--color-blue-gray);
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .app-bottom-nav {
+    background-color: #FFFFFF;
+    backdrop-filter: none;
+  }
+}
